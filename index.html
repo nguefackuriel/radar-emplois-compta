@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Radar Emplois Compta</title>
+<meta name="description" content="Offres d'emploi en comptabilité au Québec, repérées chaque matin sur Indeed, Google Emplois et Guichet-Emplois.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+html,body{margin:0}[hidden]{display:none!important}
+/* Layout: a ledger. One ruled column of offers grouped by the day the radar found them; filters pinned above. */
+:root{
+  --paper:#f6f8f6; --sheet:#ffffff; --ink:#17221e; --muted:#5b6b64; --rule:#dde5e0; --rule-strong:#c3d0c8;
+  --accent:#1d6b55; --accent-ink:#ffffff; --accent-soft:#e3f0ea; --warm:#b4541c; --warm-soft:#fbeee4;
+  --f-body:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f1513; --sheet:#151d1a; --ink:#e4ece8; --muted:#93a59c; --rule:#24302b; --rule-strong:#33423b;
+  --accent:#5cc6a1; --accent-ink:#0f1513; --accent-soft:#1a2f27; --warm:#f0a06c; --warm-soft:#33231a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f1513; --sheet:#151d1a; --ink:#e4ece8; --muted:#93a59c; --rule:#24302b; --rule-strong:#33423b;
+  --accent:#5cc6a1; --accent-ink:#0f1513; --accent-soft:#1a2f27; --warm:#f0a06c; --warm-soft:#33231a; color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+.wrap{max-width:880px;margin:0 auto;padding-block:max(24px,env(safe-area-inset-top,0px)) 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:baseline;justify-content:space-between;padding-bottom:14px;border-bottom:2px solid var(--ink)}
+h1{margin:0;font-size:1.75rem;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.run{font-family:var(--f-mono);font-size:.76rem;color:var(--muted)}
+.run b{color:var(--ink);font-weight:500}
+.tools{display:grid;gap:12px;padding-block:16px;border-bottom:1px solid var(--rule)}
+.field{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:9px 12px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--sheet);color:var(--ink)}
+.field:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lab{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px;min-width:64px}
+.chip{font:inherit;font-size:.84rem;padding:5px 12px;border-radius:999px;border:1px solid var(--rule-strong);background:transparent;color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.selects{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.selects label{display:grid;gap:4px;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.selects select{font:inherit;font-size:15px;letter-spacing:0;text-transform:none;padding:8px 10px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--sheet);color:var(--ink);min-width:0}
+.toggle{display:flex;gap:8px;align-items:center;font-size:.88rem;cursor:pointer;align-self:end;padding-bottom:9px}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.summary{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center;padding-block:12px;font-size:.86rem;color:var(--muted)}
+.summary b{color:var(--ink);font-variant-numeric:tabular-nums}
+.reset{font:inherit;font-size:.82rem;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+.day{margin-top:20px}
+.day h2{display:flex;justify-content:space-between;gap:12px;margin:0 0 6px;font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.day h2 span:last-child{font-family:var(--f-mono);letter-spacing:0;text-transform:none}
+.rows{background:var(--sheet);border:1px solid var(--rule);border-radius:8px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 16px;padding:12px 14px;border-top:1px solid var(--rule)}
+.row:first-child{border-top:0}
+.t{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.t a{color:inherit;text-decoration:none}
+.t a:hover,.t a:focus-visible{color:var(--accent);text-decoration:underline}
+.meta{grid-column:1;font-size:.86rem;color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.sal{grid-row:1;grid-column:2;text-align:right;font-variant-numeric:tabular-nums;font-size:.88rem;white-space:nowrap}
+.sal.none{color:var(--muted)}
+.tags{grid-column:2;display:flex;gap:6px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.pill{font-size:.7rem;padding:2px 8px;border-radius:4px;background:var(--accent-soft);color:var(--accent);font-weight:500;white-space:nowrap}
+.pill.warm{background:var(--warm-soft);color:var(--warm)}
+.posted{font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.empty{padding:36px 20px;text-align:center;color:var(--muted);background:var(--sheet);border:1px dashed var(--rule-strong);border-radius:8px;margin-top:20px}
+.empty strong{display:block;color:var(--ink);font-size:1.05rem;margin-bottom:6px}
+.more{display:block;margin:18px auto 0;font:inherit;font-size:.9rem;padding:9px 18px;border-radius:6px;border:1px solid var(--rule-strong);background:var(--sheet);color:var(--ink);cursor:pointer}
+footer{font-size:.8rem;color:var(--muted);margin-top:28px;display:grid;gap:4px}
+@media (max-width:560px){
+  .row{grid-template-columns:minmax(0,1fr)}
+  .sal,.tags{grid-column:1;grid-row:auto;text-align:left;justify-content:flex-start}
+  .lab{min-width:100%}
+}
+@media (prefers-reduced-motion:no-preference){.chip,.reset{transition:background-color .15s,color .15s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Radar Emplois Compta</h1>
+    <div class="run" id="run">Chargement des offres…</div>
+  </header>
+
+  <div class="tools">
+    <input class="field" id="q" type="search" placeholder="Chercher un poste, un employeur, une ville…" aria-label="Chercher dans les offres">
+    <div class="chips" id="cats" role="group" aria-label="Type de poste">
+      <span class="lab">Poste</span>
+      <button class="chip" type="button" data-v="" aria-pressed="true">Tous</button>
+      <button class="chip" type="button" data-v="tech" aria-pressed="false">Technicienne / commis</button>
+      <button class="chip" type="button" data-v="cpa" aria-pressed="false">Comptable / CPA</button>
+      <button class="chip" type="button" data-v="analyste" aria-pressed="false">Analyste / contrôle</button>
+    </div>
+    <div class="selects">
+      <label>Ville<select id="city"><option value="">Toutes les villes</option></select></label>
+      <label>Trouvées<select id="period">
+        <option value="0">Depuis 45 jours</option>
+        <option value="1">Aujourd'hui</option>
+        <option value="3">Ces 3 derniers jours</option>
+        <option value="7">Cette semaine</option>
+      </select></label>
+      <label>Source<select id="src">
+        <option value="">Toutes</option>
+        <option value="Indeed">Indeed</option>
+        <option value="Google">Google Emplois</option>
+        <option value="Guichet-Emplois">Guichet-Emplois</option>
+      </select></label>
+      <label class="toggle"><input type="checkbox" id="tele"> Télétravail ou hybride</label>
+    </div>
+  </div>
+
+  <div class="summary" id="summary" hidden></div>
+  <div id="list">
+    <div class="empty"><strong>Chargement…</strong>Les offres arrivent.</div>
+  </div>
+  <button class="more" id="more" type="button" hidden>Afficher plus d'offres</button>
+
+  <footer>
+    <span>Offres en comptabilité au Québec repérées chaque matin sur Indeed, Google Emplois et Guichet-Emplois. On garde les 45 derniers jours.</span>
+    <span>Vérifie chaque offre sur le site de l'employeur avant de postuler : certaines peuvent déjà être fermées.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var CAT={tech:"Technicienne / commis",cpa:"Comptable / CPA",analyste:"Analyste / contrôle"};
+  var PAGE=60;
+  var state={jobs:[],meta:{},cat:"",src:"",city:"",period:0,tele:false,q:"",shown:PAGE};
+  var $=function(id){return document.getElementById(id)};
+  var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+  var norm=function(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase()};
+  var TZ="America/Toronto";
+  function dayKey(d){try{return new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}catch(e){return d.toISOString().slice(0,10)}}
+  function dayLabel(k){
+    var today=dayKey(new Date()),y=dayKey(new Date(Date.now()-864e5));
+    if(k===today)return "Trouvées aujourd'hui";if(k===y)return "Trouvées hier";
+    return "Trouvées le "+new Date(k+"T12:00:00").toLocaleDateString("fr-CA",{weekday:"long",day:"numeric",month:"long"});
+  }
+  function when(iso){try{return new Date(iso).toLocaleString("fr-CA",{timeZone:TZ,weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}catch(e){return iso}}
+  function safeUrl(u){return /^https:\/\//.test(u||"")?u:""}
+  function store(k,v){try{localStorage.setItem("rec-"+k,JSON.stringify(v))}catch(e){}}
+  function load(k,d){try{var v=localStorage.getItem("rec-"+k);return v==null?d:JSON.parse(v)}catch(e){return d}}
+
+  function filtered(){
+    var now=Date.now(),q=norm(state.q);
+    return state.jobs.filter(function(j){
+      if(state.cat&&j.category!==state.cat)return false;
+      if(state.src&&j.source!==state.src)return false;
+      if(state.city&&j.city!==state.city&&!(j.cities||[]).includes(state.city))return false;
+      if(state.tele&&!j.telework)return false;
+      if(state.period){var age=(now-Date.parse(j.foundAt||0))/864e5;if(state.period===1?dayKey(new Date(j.foundAt))!==dayKey(new Date()):age>state.period)return false}
+      if(q&&norm([j.title,j.company,j.city,(j.cities||[]).join(" "),j.salary].join(" ")).indexOf(q)<0)return false;
+      return true;
+    });
+  }
+
+  function render(){
+    var jobs=filtered(),sm=$("summary");
+    var today=dayKey(new Date()),nToday=state.jobs.filter(function(j){return dayKey(new Date(j.foundAt))===today}).length;
+    var active=state.cat||state.src||state.city||state.period||state.tele||state.q;
+    sm.hidden=!state.jobs.length;
+    sm.innerHTML="<span><b>"+jobs.length+"</b> offre"+(jobs.length>1?"s":"")+(active?" sur "+state.jobs.length:"")+"</span><span><b>"+nToday+"</b> nouvelle"+(nToday>1?"s":"")+" aujourd'hui</span>"+(active?'<button class="reset" type="button" id="reset">Retirer les filtres</button>':"");
+    if(active)$("reset").onclick=resetAll;
+    if(!jobs.length){
+      $("list").innerHTML=state.jobs.length?'<div class="empty"><strong>Aucune offre ne correspond</strong>Élargis la ville, la période ou le type de poste.</div>':'<div class="empty"><strong>Aucune offre pour l\'instant</strong>Le radar ajoute ici les offres trouvées à chaque balayage du matin.</div>';
+      $("more").hidden=true;return;
+    }
+    var slice=jobs.slice(0,state.shown),groups={},order=[];
+    slice.forEach(function(j){var k=dayKey(new Date(j.foundAt));if(!groups[k]){groups[k]=[];order.push(k)}groups[k].push(j)});
+    var counts={};jobs.forEach(function(j){var k=dayKey(new Date(j.foundAt));counts[k]=(counts[k]||0)+1});
+    $("list").innerHTML=order.map(function(k){
+      return '<section class="day"><h2><span>'+esc(dayLabel(k))+'</span><span>'+counts[k]+'</span></h2><div class="rows">'+groups[k].map(row).join("")+'</div></section>';
+    }).join("");
+    $("more").hidden=jobs.length<=state.shown;
+    $("more").textContent="Afficher plus d'offres ("+(jobs.length-state.shown)+" de plus)";
+  }
+  function row(j){
+    var u=safeUrl(j.url);
+    var place=(j.cities&&j.cities.length>1)?j.cities.length+" villes ("+j.cities.slice(0,3).join(", ")+(j.cities.length>3?"…":"")+")":(j.city||"");
+    var bits=[j.company,place,j.jobType,j.telework].filter(Boolean).map(esc).join(" · ");
+    return '<div class="row"><div class="t">'+(u?'<a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(j.title)+'</a>':esc(j.title))+'</div>'+
+      '<div class="sal'+(j.salary?'':' none')+'">'+esc(j.salary||"Salaire non indiqué")+'</div>'+
+      '<div class="meta">'+bits+'</div>'+
+      '<div class="tags">'+(j.lang==="en"?'<span class="pill warm">EN</span>':"")+'<span class="pill">'+esc(CAT[j.category]||"Comptabilité")+'</span><span class="posted">'+esc(j.source)+(j.posted?" · "+esc(j.posted):"")+'</span></div></div>';
+  }
+  function setChip(v){state.cat=v;[].forEach.call($("cats").querySelectorAll(".chip"),function(c){c.setAttribute("aria-pressed",String(c.dataset.v===v))})}
+  function save(){store("f",{cat:state.cat,src:state.src,city:state.city,period:state.period,tele:state.tele})}
+  function resetAll(){setChip("");state.src="";state.city="";state.period=0;state.tele=false;state.q="";$("q").value="";$("src").value="";$("city").value="";$("period").value="0";$("tele").checked=false;state.shown=PAGE;save();render()}
+
+  $("cats").addEventListener("click",function(e){var b=e.target.closest(".chip");if(!b)return;setChip(b.dataset.v);state.shown=PAGE;save();render()});
+  $("src").addEventListener("change",function(e){state.src=e.target.value;state.shown=PAGE;save();render()});
+  $("city").addEventListener("change",function(e){state.city=e.target.value;state.shown=PAGE;save();render()});
+  $("period").addEventListener("change",function(e){state.period=+e.target.value;state.shown=PAGE;save();render()});
+  $("tele").addEventListener("change",function(e){state.tele=e.target.checked;state.shown=PAGE;save();render()});
+  $("more").addEventListener("click",function(){state.shown+=PAGE;render()});
+  var tq;$("q").addEventListener("input",function(e){clearTimeout(tq);tq=setTimeout(function(){state.q=e.target.value.trim();state.shown=PAGE;render()},150)});
+
+  fetch("data.json?v="+Date.now(),{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(d){
+    state.jobs=(d.jobs||[]).filter(function(j){return j&&j.title});state.meta=d.meta||{};
+    var m=state.meta,src=m.sources||{},down=Object.keys(src).filter(function(k){return !src[k]});
+    $("run").innerHTML=m.lastRunAt?"Dernier balayage : <b>"+esc(when(m.lastRunAt))+"</b>"+(down.length?"<br>Indisponible : "+esc(down.join(", ")):""):"Aucun balayage pour l'instant.";
+    var cc={};state.jobs.forEach(function(j){(j.cities&&j.cities.length?j.cities:[j.city]).forEach(function(c){if(c)cc[c]=(cc[c]||0)+1})});
+    $("city").innerHTML='<option value="">Toutes les villes</option>'+Object.keys(cc).sort(function(a,b){return cc[b]-cc[a]||a.localeCompare(b,"fr")}).map(function(c){return '<option value="'+esc(c)+'">'+esc(c)+' ('+cc[c]+')</option>'}).join("");
+    var f=load("f",{});if(f.cat)setChip(f.cat);
+    if(f.src){state.src=f.src;$("src").value=f.src}
+    if(f.city&&cc[f.city]){state.city=f.city;$("city").value=f.city}
+    if(f.period){state.period=+f.period;$("period").value=String(f.period)}
+    if(f.tele){state.tele=true;$("tele").checked=true}
+    render();
+  }).catch(function(){
+    $("run").textContent="Les offres n'ont pas pu être chargées.";
+    $("list").innerHTML='<div class="empty"><strong>Impossible de charger les offres</strong>Recharge la page dans un moment.</div>';
+  });
+})();
+</script>
+</body>
+</html>
